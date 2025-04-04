@@ -1,0 +1,358 @@
+openapi: 3.0.0
+info:
+  title: API SAE
+  description: API pour gérer les utilisateurs, les progressions, les cartes, et les interactions.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Serveur local
+
+paths:
+  /auth/login:
+    post:
+      summary: Connexion utilisateur
+      description: Permet à un utilisateur de se connecter.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "200":
+          description: Connexion réussie
+        "401":
+          description: Mot de passe incorrect
+        "404":
+          description: Utilisateur introuvable
+        "422":
+          description: Paramètres manquants
+        "500":
+          description: Erreur serveur
+
+  /auth/register:
+    post:
+      summary: Inscription utilisateur
+      description: Permet à un utilisateur de s'inscrire.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pseudo:
+                  type: string
+                  example: "JohnDoe"
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "201":
+          description: Utilisateur créé avec succès
+        "409":
+          description: Pseudo ou email déjà utilisé
+        "400":
+          description: Champs requis manquants
+        "500":
+          description: Erreur serveur
+
+  /progression:
+    get:
+      summary: Récupérer la progression de l'utilisateur
+      description: Retourne les informations de progression de l'utilisateur connecté.
+      responses:
+        "200":
+          description: Succès
+        "404":
+          description: Progression non trouvée
+        "500":
+          description: Erreur serveur
+
+  /progression/collection:
+    get:
+      summary: Récupérer la collection de cartes
+      description: Retourne la collection de cartes de l'utilisateur connecté.
+      responses:
+        "200":
+          description: Succès
+        "404":
+          description: Progression non trouvée
+        "500":
+          description: Erreur serveur
+
+  /progression/movies/{id}/details:
+    get:
+      summary: Détails d'un film
+      description: Retourne les détails d'un film spécifique.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Succès
+        "404":
+          description: Film non trouvé
+        "422":
+          description: ID du film requis
+        "500":
+          description: Erreur serveur
+
+  /progression/actor/{id}/details:
+    get:
+      summary: Détails d'un acteur
+      description: Retourne les détails d'un acteur spécifique.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Succès
+        "404":
+          description: Acteur non trouvé
+        "500":
+          description: Erreur serveur
+
+  /guess/verify:
+    post:
+      summary: Vérifier une réponse
+      description: Vérifie si une réponse donnée est correcte.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "film"
+                id:
+                  type: integer
+                  example: 1
+                guess:
+                  type: string
+                  example: "Nom de l'acteur ou du film"
+      responses:
+        "200":
+          description: Succès
+        "400":
+          description: Type inconnu
+        "422":
+          description: Paramètres manquants
+        "500":
+          description: Erreur serveur
+
+  /gacha/draw:
+    post:
+      summary: Tirer des cartes
+      description: Permet à l'utilisateur de tirer des cartes.
+      responses:
+        "200":
+          description: Tirage réussi
+        "403":
+          description: Pas assez de monnaie pour tirer
+        "500":
+          description: Erreur serveur
+
+  /decks/save:
+    post:
+      summary: Sauvegarder un deck
+      description: Permet à l'utilisateur de sauvegarder un deck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deck:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      type:
+                        type: string
+      responses:
+        "200":
+          description: Deck sauvegardé avec succès
+        "422":
+          description: Deck invalide
+        "500":
+          description: Erreur serveur
+
+  /movies:
+    get:
+      summary: Récupérer tous les films
+      description: Retourne la liste de tous les films.
+      responses:
+        "200":
+          description: Succès
+        "500":
+          description: Erreur serveur
+
+  /actors:
+    get:
+      summary: Récupérer tous les acteurs
+      description: Retourne la liste de tous les acteurs.
+      responses:
+        "200":
+          description: Succès
+        "500":
+          description: Erreur serveur
+
+  /moviesactors:
+    get:
+      summary: Récupérer les relations films-acteurs
+      description: Retourne la liste des relations entre films et acteurs.
+      responses:
+        "200":
+          description: Succès
+        "500":
+          description: Erreur serveur
+
+  /details/acteur/{id}:
+    get:
+      summary: Détails d'un acteur
+      description: Retourne les détails d'un acteur spécifique, y compris les films associés.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  nom:
+                    type: string
+                    example: "Leonardo DiCaprio"
+                  rarete:
+                    type: string
+                    example: "Épique"
+                  films:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        titre:
+                          type: string
+                          example: "Inception"
+                        trouve:
+                          type: boolean
+                          example: true
+                        rarete:
+                          type: string
+                          example: "Épique"
+                  total:
+                    type: integer
+                    example: 10
+                  complet:
+                    type: boolean
+                    example: false
+        "404":
+          description: Acteur non trouvé
+        "500":
+          description: Erreur serveur
+
+  /details/film/{id}:
+    get:
+      summary: Détails d'un film
+      description: Retourne les détails d'un film spécifique, y compris les acteurs associés.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  titre:
+                    type: string
+                    example: "Inception"
+                  acteurs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        nom:
+                          type: string
+                          example: "Leonardo DiCaprio"
+        "404":
+          description: Film non trouvé
+        "422":
+          description: ID du film requis
+        "500":
+          description: Erreur serveur
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        pseudo:
+          type: string
+          example: "JohnDoe"
+        email:
+          type: string
+          example: "user@example.com"
+
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: "film"
+        rarete:
+          type: string
+          example: "Épique"
+        titre:
+          type: string
+          example: "Inception"
+        nom:
+          type: string
+          example: "Leonardo DiCaprio"
